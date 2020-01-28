@@ -2,38 +2,38 @@ var bodyParser = require('body-parser');
 var db = require('../mongo-db.js');
 var util = require('util');
 
-exports.index = function(req, res) {
-	res.send('Hello from temoignages controller');
-}
-
-exports.getAll = function(req, res) {
-	db.getAllLights(function(response){
+exports.getAll = function(page, pageSize, req, res) {
+	db.getTemoignages(page, pageSize, function(response){
 		res.send(response);
 	});
 }
 
-exports.get = function(req, res) {
-	db.getAllLights(function(response){
+exports.getCasTemoignages = function(idCas, page, pageSize, req, res) {
+	db.getCasTemoignages(idCas,  page, pageSize, function(response){
 		res.send(response);
 	});
 }
 
-exports.insert = function(req, res) {
-	db.registerLight(req.body, function(response){
+exports.get = function(id, req, res) {
+	db.getTemoignageById(id, function(response){
 		res.send(response);
 	});
 }
 
-exports.update = function(mac_add, req, res) {
-	setLightValue(mac_add, true, res);
+exports.insert = function(idCas, req, res) {
+	db.createCas(req.body, function(response){
+		res.send(response);
+	});
 }
 
-exports.delete = function(mac_add, req, res) {
-	setLightValue(mac_add, false, res);
+exports.update = function(id, req, res) {
+	db.updateCas(id, function(response){
+		res.send(response);
+	});
 }
 
-exports.getLightData = function(mac_add, req, res) {
-	db.getLightValues(mac_add, function(response){
+exports.delete = function(id, req, res) {
+	db.deleteCas(id, function(response){
 		res.send(response);
 	});
 }

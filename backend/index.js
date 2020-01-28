@@ -22,4 +22,5 @@ app.use(router);
 
 server.listen(port, function () {
   console.log('Application listening on localhost' + ':' + port);
+  //console.log(db.getCas());
 });

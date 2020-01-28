@@ -2,321 +2,231 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
 var assert = require('assert');
 
-var tempColl = 'temperature'
-var lightColl = 'light'
-
-// Datatbase URL
-const dbUrl = 'mongodb://localhost:27017'; 
-
-// Database Name
-const dbName = 'capteurs';
+// Database
+const DB_URL = 'mongodb://localhost:27017'; 
+const DB_NAME = 'projetGeipan';
+const CAS_COLLECTION = 'cas';
+const TEMOIGNAGES_COLLECTION = 'temoignages';
 
 exports.connexionMongo = function(callback) {
-    MongoClient.connect(url, function(err, client) {
-        var db = client.db(dbName);
+    MongoClient.connect(DB_URL, function(err, client) {
+        var db = client.db(DB_NAME);
         assert.equal(null, err);
         callback(err, db);
     });
 }
 
-exports.countLights = function(callback) {
-    countCapteursInCollection(lightColl, callback);
-}
-
-exports.countRadiators = function(callback) {
-    countCapteursInCollection(tempColl, callback);
-}
-
-exports.getAllLights = function(callback) {
-    getAllData(lightColl, callback);
-}
-
-exports.getAllTemperatures = function(callback) {
-    getAllData(tempColl, callback);
-}
-
-exports.setLightValue = function (formData, callback) {
-	setPowerValue(lightColl, formData, callback);
-}
-
-exports.setRadiatorValue = function (formData, callback) {
-	setPowerValue(tempColl, formData, callback);
-}
-
-exports.registerLight = function(formData, callback) {
-	registerData(lightColl, formData, callback);
-}
-
-exports.registerTemperature = function(formData, callback) {
-	//console.log("donnee recue" + JSON.stringify(formData));
-	registerData(tempColl, formData, callback);
-}
-
-exports.getLightValues = function (mac_add, callback) {
-    getCapteurValues(lightColl, mac_add, callback);
-}
-
-exports.getTemperatureValues = function (mac_add, callback) {
-    getCapteurValues(tempColl, mac_add, callback);
-}
-
-
-function countCapteursInCollection(collection, callback) {
-    MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
+exports.countCas = function() {
+    MongoClient.connect(DB_URL, function(err, client) {
+        var db = client.db(DB_NAME);
         if(!err){
-            db.collection(lightColl)
-                    .countDocuments()
-                    .then(rep => callback(rep));
+            db.collection(CAS_COLLECTION)
+                .countDocuments()
+                .then(rep => callback(rep));
         }
     });
 }
 
-function registerData(coll, formData, callback) {
-    //console.log("*****" + JSON.stringify(formData));
-	MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
-        if(!err) {
-            let myQuery = { "mac_add": formData.mac_add };
-            db.collection(coll).findOne(myQuery, function(err, data) {
-                if(data != null) {
-                    addDataInCollection(coll, formData, callback);
-                } 
-                else {
-    				addNewObjectInCollection(coll, formData, callback);
-                }
-            });
-        } else {
-            let reponse = {
-                "succes": false,
-                "data": null,
-                "error": err,
-                "msg": "erreur de connexion à la base"
-            };
-            callback(reponse);
-        }
-    });
+exports.getCas = function(page, pageSize, callback) {
+	find(CAS_COLLECTION, null, page, pageSize, callback);
+};
+
+exports.getCasById = function(id, callback) {
+    findOne(CAS_COLLECTION, {id_cas: id}, callback);
 }
 
-function addDataInCollection(coll, formData, callback){
-	MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
-		if(!err) {
-			let power;
-			//console.log(formData.powered);
-			if(parseFloat(formData.powered) == 0 || formData.powered == 0){
-				power = false;
-			}
-			else {
-				power = true;
-			}
-	        let mac_add = formData.mac_add;
-	        let myQuery = { "mac_add": mac_add };
-	        let newvalue = { date : new Date(), value : parseFloat(formData.value), powered : power};
-	        
-	        if(!err) {
-	            db.collection(coll)
-	            .update(myQuery, { $push: {"data": newvalue}}).then(
-	                function (err, updated) {
-	                    reponse = {
-			                "succes" : true,
-			                "data" : updated,
-			                "error" : null,
-			                "msg": "Ajout réussi"
-		            	};
-		            	callback(reponse);
-	                });
-	        } 
-	        else {
-	            let reponse = {
-	                "succes": false,
-                	"data": null,
-	                "error" : err,
-	                "msg":"Problème lors de l'enregistrement, erreur de connexion."
-	            };
-	            callback(reponse);
-	        }
-    	}
-    	else {
-    		let reponse = reponse = {
-                "succes": false,
-                "data": null,
-                "error" : err,
-                "msg":"Problème lors de la connexion à la DB"
-            };
-            callback(reponse);
-    	}
-    });
-}
+exports.createCas = function(formData, callback) {
+	MongoClient.connect(DB_URL, function(err, client) {
+		var db = client.db(DB_NAME);
 
-function addNewObjectInCollection(coll, formData, callback){
-	MongoClient.connect(dbUrl, function(err, client) {
-		var db = client.db(dbName);
 	    if(!err) {
-	    	let power;
-            if(parseFloat(formData.powered) == 0 || formData.powered == 0){
-				power = false;
-			}
-			else {
-				power = true;
-			}
+	 
 			let toInsert = {
-				mac_add : formData.mac_add, 
-				powered : power,
-				data : [
-					{ date : new Date(), value : parseFloat(formData.value), powered : power},
-				]
+				name : formData.nom, 
+				cuisine : formData.cuisine
 			};
-			//console.log(JSON.stringify(toInsert));
-		    db.collection(coll)
-		    .insertOne(toInsert, function(err, inserted) {
+			console.dir(JSON.stringify(toInsert));
+		    db.collection(CAS_COLLECTION)
+		    .insertOne(toInsert, function(err, result) {
+		    	let reponse;
+
 		        if(!err){
-		            let reponse = {
-		                "succes" : true,
-		                "data" : inserted,
-		                "error" : null,
-		                "msg": "Ajout réussi"
+		            reponse = {
+		                succes : true,
+		                result: result,
+		                error : null,
+		                msg: "Ajout réussi " + result
 		            };
-		    		callback(reponse);
-		        } 
-		        else {
-		            let reponse = {
-		                "succes" : false,
-                		"data": null,
-		                "error" : err,
-		                "msg" : "Problème à l'insertion"
+		        } else {
+		            reponse = {
+		                succes : false,
+		                error : err,
+		                msg: "Problème à l'insertion"
 		            };
-		    		callback(reponse);
 		        }
+		        callback(reponse);
 		    });
-		}
-		else {
+		} else{
 			let reponse = reponse = {
-				"succes": false,
-                "data": null,
-				"error" : err,
-				"msg":"Problème lors de l'insertion, erreur de connexion."
-			};
+                    	succes: false,
+                        error : err,
+                        msg:"Problème lors de l'insertion, erreur de connexion."
+                    };
             callback(reponse);
 		}
 	});
 }
 
-function getCapteurValues(coll, mac_add, callback) {
-    MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
-        if(!err) {
-            // La requete mongoDB
-            let myQuery = { "mac_add": mac_add };
-            db.collection(coll).findOne(myQuery, function(err, data) {
-                let reponse;
-                if(!err) {
-                    reponse = {
-                    	"succes": true,
-                        "data" : data,
-                        "error" : null,
-                        "msg":"Données de capteurs envoyées"
-                    };
-                } 
-                else {
-                    reponse = {
-                    	"succes": false,
-                        "data": null,
-                        "error": err,
-                        "msg": "erreur lors du find"
-                    };
-                }
-                //console.log(reponse);
-                callback(reponse);
-            });
-        } else {
-            let reponse = {
-                "succes": false,
-                "data": null,
-                "error": err,
-                "msg": "erreur de connexion à la base"
-            };
-            callback(reponse);
-        }
-    });
-}
+exports.updateCas = function(id, formData, callback) {
 
-function setPowerValue(coll, formData, callback) {
-	MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
+	MongoClient.connect(DB_URL, function(err, client) {
+		var db = client.db(DB_NAME);
+
 		if(!err) {
-	        let mac_add = formData.mac_add;
-	        let myQuery = { "mac_add": mac_add };
-	        
-	        if(!err) {
-	            db.collection(coll)
-	            .update(myQuery, { $set: {"powered": formData.powered}}).then(
-	                function (err, updated) {
-	                    reponse = {
-			                "succes" : true,
-			                "data" : updated,
-			                "error" : null,
-			                "msg": "Modification réussie"
-		            	};
-		            	callback(reponse);
-	                });
-	        } 
-	        else {
-	            let reponse = {
-	                "succes": false,
-                	"data": null,
-	                "error" : err,
-	                "msg":"Problème lors de la modification"
-	            };
-	            callback(reponse);
-	        }
-    	}
-    	else {
-    		let reponse = reponse = {
-                "succes": false,
-                "data": null,
-                "error" : err,
-                "msg":"Problème lors de la connexion à la DB"
-            };
+            let myquery = { "id_cas": ObjectId(id)};
+	        let newvalues = {
+	        	name : formData.nom, 
+	        	cuisine : formData.cuisine
+	        };
+
+
+			db.collection(CAS_COLLECTION)
+			.replaceOne(myquery, newvalues, function(err, result) {
+	         	if(!err){
+			    	reponse = {
+		                succes : true,
+		                result: result,
+		                error : null,
+		                msg: "Modification réussie " + result
+		            };
+			   	} else {
+		            reponse = {
+		                succes : false,
+		                error : err,
+		                msg: "Problème à la modification"
+		            };
+			    }
+			    callback(reponse);
+	        });
+		} else{
+			let reponse = reponse = {
+                    	succes: false,
+                        error : err,
+                        msg:"Problème lors de la modification, erreur de connexion."
+                    };
             callback(reponse);
-    	}
+		}
+	});
+}
+
+exports.deleteCas = function(id, callback) {
+	MongoClient.connect(DB_URL, function(err, client) {
+		var db = client.db(DB_NAME);
+
+		if(!err) {
+            let myquery = { "id_cas": ObjectId(id)};
+	        
+			db.collection(CAS_COLLECTION)
+			.deleteOne(myquery, function(err, result) {
+	         	if(!err){
+			    	reponse = {
+		                succes : true,
+		                result: result,
+		                error : null,
+		                msg: "Suppression réussie " + result
+		            };
+			   	} else {
+		            reponse = {
+		                succes : false,
+		                error : err,
+		                msg: "Problème à la suppression"
+		            };
+			    }
+			    callback(reponse);
+	        });
+		} else{
+			let reponse = reponse = {
+                    	succes: false,
+                        error : err,
+                        msg:"Problème lors de la suppression, erreur de connexion."
+                    };
+            callback(reponse);
+		}
+	});
+}
+
+exports.countCasTemoignages = function() {
+    MongoClient.connect(DB_URL, function(err, client) {
+        var db = client.db(DB_NAME);
+        if(!err){
+            db.collection(CAS_COLLECTION)
+                .countDocuments()
+                .then(rep => callback(rep));
+        }
     });
 }
 
-function getAllData(coll, callback) {
-	MongoClient.connect(dbUrl, function(err, client) {
-        var db = client.db(dbName);
+exports.getCasTemoignages = function(idCas, page, pageSize, callback) {
+	find(TEMOIGNAGES_COLLECTION, {id_cas: idCas}, page, pageSize, callback);
+};
+
+exports.getTemoignages = function(page, pageSize, callback) {
+	find(TEMOIGNAGES_COLLECTION, null, page, pageSize, callback);
+};
+
+exports.getTemoignageById = function(id, callback) {
+    findOne(TEMOIGNAGES_COLLECTION, {id_temoignage: id}, callback);
+}
+
+function find(collection, query, page, pageSize, callback) {
+	console.log(page);
+	console.log(pageSize);
+	MongoClient.connect(
+		DB_URL,
+		function(err, client) {
+		var db = client.db(DB_NAME);
+        if(!err){
+			db.collection(collection)
+			.find(query)
+            .skip(page*pageSize)
+            .limit(pageSize)
+            .toArray()
+            .then(arr => {
+				callback(buildMessage(true, arr, null, ""));
+			});
+        }
+        else{
+            callback(-1);
+        }
+    });
+}
+
+function findOne(collection, query, callback) {
+	MongoClient.connect(DB_URL, function(err, client) {
+		var db = client.db(DB_NAME);
         if(!err) {
-            // La requete mongoDB
-            let myQuery = { };
-            db.collection(coll).find({}).toArray(function(err, data) {
-                let reponse;
-                if(!err) {
-                    reponse = {
-                    	"succes": true,
-                        "data" : data,
-                        "error" : null,
-                        "msg":"Données de capteurs envoyées"
-                    };
-                } 
-                else {
-                    reponse = {
-                    	"succes": false,
-                        "data": null,
-                        "error": err,
-                        "msg": "erreur lors du find"
-                    };
+            db.collection(collection) 
+            .findOne(query, function(err, data) {
+            	let reponse;
+                if(!err){
+					reponse = buildMessage(true, data, null, "");
+                } else{
+					reponse = buildMessage(false, null, err, "Erreur lors du find");
                 }
                 callback(reponse);
             });
         } else {
-            let reponse = {
-                "succes": false,
-                "data": null,
-                "error": err,
-                "msg": "erreur de connexion à la base"
-            };
+			let reponse = buildMessage(false, null, err, "Erreur de connexion à la base");
             callback(reponse);
         }
     });
+}
+
+function buildMessage(status, data, message, error) {
+	return {
+		success: status,
+		data: data,
+		msg: message,
+		err: error
+	};
 }

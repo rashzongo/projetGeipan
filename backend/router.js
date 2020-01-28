@@ -2,54 +2,60 @@ var express = require('express');
 var router = express.Router();
 var casController = require('./controllers/cas.controller');
 var temoignagesController = require('./controllers/temoignages.controller');
-
 var bodyParser = require('body-parser');
-
 var jsonParser = bodyParser.json();
-
 
 //Index
 router.get('/', function(req,res){
   res.sendFile(__dirname + '/public/index.html');
 });
 
-// Temoignages
-router.get('/temoignages', jsonParser, temoignagesController.getAll);
-
-router.post('/temoignages', jsonParser, function(req, res, next) {
-	temoignagesController.insert(req, res);
-});
-
-router.get('/temoignages/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
-});
-
-router.patch('/temoignages/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
-});
-
-router.delete('/temoignages/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
-});
-
-
 // Cas
-router.get('/cas', jsonParser, temoignagesController.getAll);
+router.get('/cas', jsonParser, function(req, res, next) {
+	casController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
+});
 
 router.post('/cas', jsonParser, function(req, res, next) {
-	temoignagesController.insert(req, res);
+	casController.insert(req, res);
 });
 
 router.get('/cas/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
+	casController.get(parseInt(req.params.id), req, res);
 });
 
 router.patch('/cas/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
+	casController.update(parseInt(req.params.id), req, res);
 });
 
 router.delete('/cas/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(id);
+	casController.delete(parseInt(req.params.id), req, res);
+});
+
+// Cas && Temoignages
+router.get('/cas/:idCas/temoignages', jsonParser,  function(req, res, next) {
+	temoignagesController.getCasTemoignages(parseInt(req.params.idCas), parseInt(req.query.page) || 0,
+	parseInt(req.query.pageSize) || 20, req, res);
+});
+
+router.post('/cas/:idCas/temoignages', jsonParser, function(req, res, next) {
+	temoignagesController.insert(parseInt(req.params.idCas), req, res);
+});
+
+// Temoignages
+router.get('/temoignages', jsonParser, function(req, res, next) {
+	temoignagesController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
+});
+
+router.get('/temoignage/:id', jsonParser,  function(req, res, next) {
+	temoignagesController.get(parseInt(req.params.id), req, res);
+});
+
+router.patch('/temoignage/:id', jsonParser,  function(req, res, next) {
+	temoigngesController.update(parseInt(req.params.id), req, res);
+});
+
+router.delete('/temoignage/:id', jsonParser,  function(req, res, next) {
+	temoigngesController.delete(parseInt(req.params.id), req, res);
 });
 
 module.exports = router;
