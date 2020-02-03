@@ -179,8 +179,6 @@ exports.getTemoignageById = function(id, callback) {
 }
 
 function find(collection, query, page, pageSize, callback) {
-	console.log(page);
-	console.log(pageSize);
 	MongoClient.connect(
 		DB_URL,
 		function(err, client) {
