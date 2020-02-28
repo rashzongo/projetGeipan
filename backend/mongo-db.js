@@ -16,15 +16,21 @@ exports.connexionMongo = function(callback) {
     });
 }
 
-exports.countCas = function() {
+function count(collection, callback) {
     MongoClient.connect(DB_URL, function(err, client) {
         var db = client.db(DB_NAME);
         if(!err){
-            db.collection(CAS_COLLECTION)
+            db.collection(collection)
                 .countDocuments()
-                .then(rep => callback(rep));
-        }
-    });
+                .then(function(rep){
+					callback(rep);
+				})
+				.catch(error => { throw error});
+		}
+		else {
+			callback(0);
+		}
+	});
 }
 
 exports.getCas = function(page, pageSize, callback) {
@@ -190,7 +196,10 @@ function find(collection, query, page, pageSize, callback) {
             .limit(pageSize)
             .toArray()
             .then(arr => {
-				callback(buildMessage(true, arr, null, ""));
+				count(CAS_COLLECTION, function (response) {
+					callback(buildMessage(true, arr, response, null, ""));
+				});
+				
 			});
         }
         else{
@@ -207,23 +216,24 @@ function findOne(collection, query, callback) {
             .findOne(query, function(err, data) {
             	let reponse;
                 if(!err){
-					reponse = buildMessage(true, data, null, "");
+					reponse = buildMessage(true, data, 1, null, "");
                 } else{
-					reponse = buildMessage(false, null, err, "Erreur lors du find");
+					reponse = buildMessage(false, null, 0, err, "Erreur lors du find");
                 }
                 callback(reponse);
             });
         } else {
-			let reponse = buildMessage(false, null, err, "Erreur de connexion à la base");
+			let reponse = buildMessage(false, null, 0, err, "Erreur de connexion à la base");
             callback(reponse);
         }
     });
 }
 
-function buildMessage(status, data, message, error) {
+function buildMessage(status, data, total, message, error) {
 	return {
 		success: status,
 		data: data,
+		total: total,
 		msg: message,
 		err: error
 	};
