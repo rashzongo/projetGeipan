@@ -11,13 +11,8 @@ router.get('/', function(req,res){
 });
 
 // Import Data
-router.get('/importData', jsonParser, function(req, res, next) {
+router.post('/importData', jsonParser, function(req, res, next) {
 	casController.importData(req, res);
-});
-
-// Cas
-router.get('/cas', jsonParser, function(req, res, next) {
-	casController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
 });
 
 router.get('/zones', jsonParser, function(req, res, next) {
@@ -28,9 +23,18 @@ router.get('/categories', jsonParser, function(req, res, next) {
 	casController.getAllCategories(req, res);
 });
 
-router.get('/cas/search', jsonParser, function(req, res, next) {
-	casController.search(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, null, null, null,null,  req, res);
-	//page, pageSize, category, zone, startDate, endDate,
+// Cas
+router.get('/cas', jsonParser, function(req, res, next) {
+	//page, pageSize, searchInput, category, zone, startDate, endDate, 
+	casController.getAll(
+		parseInt(req.query.page) || 0,
+		parseInt(req.query.pageSize) || 20,
+		req.query.searchInput || undefined,
+		req.query.category || undefined,
+		req.query.zone || undefined,
+		req.query.startDate || undefined,
+		req.query.endDate || undefined,
+		req, res);
 });
 
 router.get('/cas/:id', jsonParser,  function(req, res, next) {

@@ -33,8 +33,25 @@ exports.countCas = function() {
     });
 }
 
-exports.getCas = function(page, pageSize, callback) {
-	find(CAS_COLLECTION, null, page, pageSize, callback);
+exports.getCas = function(page, pageSize, searchInput, category, zone, startDate, endDate, callback) {
+	const query = {};
+	if(searchInput){
+		query.cas_nom_dossier = {'$regex' : `.*${searchInput}.*`};
+	}
+	if(startDate){
+		query.cas_date = { $gte : new Date(startDate).toISOString()};
+	}
+	if(endDate){
+		query.cas_date = { $lte : new Date(endDate).toISOString()};
+	}
+	if(category){
+		query.cas_classification = category;
+	}
+	if(zone){
+		query.cas_zone_nom = zone;
+	}
+	console.log(query);
+	find(CAS_COLLECTION, query, page, pageSize, callback);
 };
 
 exports.getCasById = function(id, callback) {
@@ -153,8 +170,8 @@ exports.search = function(page, pageSize, category, zone, startDate, endDate, ca
 		CONNECTION_OPTIONS,
 		function(err, client) {
 		var db = client.db(DB_NAME);
-		const startDate = new Date('10/10/2015');
-		const endDate = new Date();
+		const startDate = new Date(startDate);
+		const endDate = new Date(endDate);
         if(!err){
 			db.collection(CAS_COLLECTION)
 			.aggregate(
@@ -192,12 +209,15 @@ exports.importData = async function(callback){
 	})
 	.fromFile("./data/cas_pub.csv")
 	.then(cas => {
+		var date = new Date();
 		for(let i = 0; i < cas.length; i++) {
-			const day = Number(cas[i].cas_JJ);
-			const month = Number(cas[i].cas_MM);
-			const year = Number(cas[i].cas_AAAA);
-			cas[i].cas_date = new Date(`${cas[i].cas_JJ}/${cas[i].cas_MM}/${cas[i].cas_MM}`);
+			const day = Number(cas[i].cas_JJ) || 01;
+			const month = formatNumber(cas[i].cas_MM) - 1 || 00;
+			const year = formatNumber(cas[i].cas_AAAA);
+			date = new Date(Date.UTC(year, month, day));
+			cas[i].cas_date = date.toISOString();
 		}
+		
 		MongoClient.connect(
 		DB_URL,
 		CONNECTION_OPTIONS,
@@ -241,4 +261,8 @@ exports.importData = async function(callback){
 	});
 
 	callback(buildMessage(true, null, null, null));
+}
+
+function formatNumber(date){
+	return Number(date.replace('-', 0));
 }
