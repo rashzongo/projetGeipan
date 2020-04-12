@@ -1,6 +1,4 @@
-var bodyParser = require('body-parser');
 var db = require('../mongo-db.js');
-var util = require('util');
 
 exports.getAll = function(page, pageSize, req, res) {
 	db.getTemoignages(page, pageSize, function(response){

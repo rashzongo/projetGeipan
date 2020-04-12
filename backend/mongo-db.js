@@ -22,17 +22,6 @@ exports.connexionMongo = function(callback) {
     });
 }
 
-exports.countCas = function() {
-    MongoClient.connect(DB_URL, CONNECTION_OPTIONS, function(err, client) {
-        var db = client.db(DB_NAME);
-        if(!err){
-            db.collection(CAS_COLLECTION)
-                .countDocuments()
-                .then(rep => callback(rep));
-        }
-    });
-}
-
 exports.getCas = function(page, pageSize, searchInput, category, zone, startDate, endDate, callback) {
 	const query = {};
 	if(searchInput){
@@ -81,7 +70,7 @@ exports.getTemoignageById = function(id, callback) {
     findOne(TEMOIGNAGES_COLLECTION, {id_temoignage: id}, callback);
 }
 
-function find(collection, query, page, pageSize, callback) {
+async function find(collection, query, page, pageSize, callback) {
 	MongoClient.connect(
 		DB_URL,
 		CONNECTION_OPTIONS,
@@ -94,7 +83,12 @@ function find(collection, query, page, pageSize, callback) {
             .limit(pageSize)
             .toArray()
             .then(arr => {
-				callback(buildMessage(true, arr, null, ""));
+				//Count Documents
+				db.collection(collection)
+				.find(query).count().then(
+					total => {
+						callback(buildMessage(true, arr, total, null));
+					});
 			});
         }
         else{
@@ -104,6 +98,7 @@ function find(collection, query, page, pageSize, callback) {
 }
 
 function findOne(collection, query, callback) {
+	console.log(query)
 	MongoClient.connect(DB_URL,
 		CONNECTION_OPTIONS,
 		function(err, client) {
@@ -111,27 +106,28 @@ function findOne(collection, query, callback) {
         if(!err) {
             db.collection(collection) 
             .findOne(query, function(err, data) {
-            	let reponse;
+				let reponse;
+				console.log(data);
                 if(!err){
-					reponse = buildMessage(true, data, null, "");
+					reponse = buildMessage(true, data, data ? 1 : 0, "");
                 } else{
-					reponse = buildMessage(false, null, err, "Erreur lors du find");
+					reponse = buildMessage(false, null, null, "Erreur lors du find : " +  err);
                 }
                 callback(reponse);
             });
         } else {
-			let reponse = buildMessage(false, null, err, "Erreur de connexion à la base");
+			let reponse = buildMessage(false, null, null, "Erreur de connexion à la base : " + err);
             callback(reponse);
         }
     });
 }
 
-function buildMessage(status, data, message, error) {
+function buildMessage(status, data, total, message) {
 	return {
 		success: status,
 		data: data,
-		msg: message,
-		err: error
+		total: total,
+		msg: message
 	};
 }
 
@@ -158,52 +154,12 @@ exports.getAllZones = function(callback) {
 	getAllFieldValues(CAS_COLLECTION, CAS_ZONE_NOM, callback);
 }
 
-exports.getAllCtegoriess = function(callback) {
+exports.getAllCategories = function(callback) {
 	getAllFieldValues(CAS_COLLECTION, CAS_CLASSIFICATION, callback);
 }
 
-exports.search = function(page, pageSize, category, zone, startDate, endDate, callback) {
-	console.log('searching...');
-	
-	MongoClient.connect(
-		DB_URL,
-		CONNECTION_OPTIONS,
-		function(err, client) {
-		var db = client.db(DB_NAME);
-		const startDate = new Date(startDate);
-		const endDate = new Date(endDate);
-        if(!err){
-			db.collection(CAS_COLLECTION)
-			.aggregate(
-				[
-					{
-						$addFields:{
-							caseDate:{
-								$dateFromParts : {
-									'year':  "$cas_AAAA" ,
-									'month': { $toInt:  "$cas_MM" },
-									'day': { $toInt:  "$cas_JJ" },
-								}
-							}
-						}
-					}
-				]
-			)
-            .toArray()
-            .then(arr => {
-				count(CAS_COLLECTION, function (response) {
-					callback(buildMessage(true, arr, response, null, ""));
-				});
-			});
-        }
-        else{
-            callback(-1);
-        }
-    });
-}
-
-exports.importData = async function(callback){
-	await csvtojson({
+exports.importData = function(callback){
+	csvtojson({
 		noheader: false,
 		delimiter: ";"
 	})
@@ -236,7 +192,7 @@ exports.importData = async function(callback){
 		);
 	});
 
-	await csvtojson({
+	csvtojson({
 		noheader: false,
 		delimiter: ";"
 	})
@@ -260,7 +216,7 @@ exports.importData = async function(callback){
 		);
 	});
 
-	callback(buildMessage(true, null, null, null));
+	callback(buildMessage(true, null, 0, null));
 }
 
 function formatNumber(date){

@@ -1,6 +1,4 @@
-var bodyParser = require('body-parser');
 var db = require('../mongo-db.js');
-var util = require('util');
 
 exports.getAll = function(page, pageSize, searchInput, category, zone, startDate, endDate, req, res) {
 	db.getCas(page, pageSize, searchInput, category, zone, startDate, endDate, function(response){
@@ -21,7 +19,7 @@ exports.getAllZones = function(req, res) {
 }
 
 exports.getAllCategories = function(req, res) {
-	db.getAllCtegoriess(function(response){
+	db.getAllCategories(function(response){
 		res.send(response);
 	});
 }

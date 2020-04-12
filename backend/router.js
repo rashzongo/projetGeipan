@@ -38,12 +38,12 @@ router.get('/cas', jsonParser, function(req, res, next) {
 });
 
 router.get('/cas/:id', jsonParser,  function(req, res, next) {
-	casController.get(parseInt(req.params.id), req, res);
+	casController.get(req.params.id, req, res);
 });
 
 // Cas && Temoignages
 router.get('/cas/:idCas/temoignages', jsonParser,  function(req, res, next) {
-	temoignagesController.getCasTemoignages(parseInt(req.params.idCas), parseInt(req.query.page) || 0,
+	temoignagesController.getCasTemoignages(req.params.idCas, parseInt(req.query.page) || 0,
 	parseInt(req.query.pageSize) || 20, req, res);
 });
 
@@ -54,7 +54,7 @@ router.get('/temoignages', jsonParser, function(req, res, next) {
 });
 
 router.get('/temoignage/:id', jsonParser,  function(req, res, next) {
-	temoignagesController.get(parseInt(req.params.id), req, res);
+	temoignagesController.get(req.params.id, req, res);
 });
 
 module.exports = router;
