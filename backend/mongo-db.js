@@ -1,6 +1,6 @@
 var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectID;
 var assert = require('assert');
+const csvtojson = require("csvtojson");
 
 // Database
 const DB_URL = 'mongodb://localhost:27017'; 
@@ -9,9 +9,13 @@ const CAS_COLLECTION = 'cas';
 const TEMOIGNAGES_COLLECTION = 'temoignages';
 const CAS_ZONE_NOM = 'cas_zone_nom';
 const CAS_CLASSIFICATION = 'cas_classification';
+const CONNECTION_OPTIONS = {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+};
 
 exports.connexionMongo = function(callback) {
-    MongoClient.connect(DB_URL, function(err, client) {
+    MongoClient.connect(DB_URL, CONNECTION_OPTIONS, function(err, client) {
         var db = client.db(DB_NAME);
         assert.equal(null, err);
         callback(err, db);
@@ -19,7 +23,7 @@ exports.connexionMongo = function(callback) {
 }
 
 exports.countCas = function() {
-    MongoClient.connect(DB_URL, function(err, client) {
+    MongoClient.connect(DB_URL, CONNECTION_OPTIONS, function(err, client) {
         var db = client.db(DB_NAME);
         if(!err){
             db.collection(CAS_COLLECTION)
@@ -37,128 +41,8 @@ exports.getCasById = function(id, callback) {
     findOne(CAS_COLLECTION, {id_cas: id}, callback);
 }
 
-exports.createCas = function(formData, callback) {
-	MongoClient.connect(DB_URL, function(err, client) {
-		var db = client.db(DB_NAME);
-
-	    if(!err) {
-	 
-			let toInsert = {
-				name : formData.nom, 
-				cuisine : formData.cuisine
-			};
-			console.dir(JSON.stringify(toInsert));
-		    db.collection(CAS_COLLECTION)
-		    .insertOne(toInsert, function(err, result) {
-		    	let reponse;
-
-		        if(!err){
-		            reponse = {
-		                succes : true,
-		                result: result,
-		                error : null,
-		                msg: "Ajout réussi " + result
-		            };
-		        } else {
-		            reponse = {
-		                succes : false,
-		                error : err,
-		                msg: "Problème à l'insertion"
-		            };
-		        }
-		        callback(reponse);
-		    });
-		} else{
-			let reponse = reponse = {
-                    	succes: false,
-                        error : err,
-                        msg:"Problème lors de l'insertion, erreur de connexion."
-                    };
-            callback(reponse);
-		}
-	});
-}
-
-exports.updateCas = function(id, formData, callback) {
-
-	MongoClient.connect(DB_URL, function(err, client) {
-		var db = client.db(DB_NAME);
-
-		if(!err) {
-            let myquery = { "id_cas": ObjectId(id)};
-	        let newvalues = {
-	        	name : formData.nom, 
-	        	cuisine : formData.cuisine
-	        };
-
-
-			db.collection(CAS_COLLECTION)
-			.replaceOne(myquery, newvalues, function(err, result) {
-	         	if(!err){
-			    	reponse = {
-		                succes : true,
-		                result: result,
-		                error : null,
-		                msg: "Modification réussie " + result
-		            };
-			   	} else {
-		            reponse = {
-		                succes : false,
-		                error : err,
-		                msg: "Problème à la modification"
-		            };
-			    }
-			    callback(reponse);
-	        });
-		} else{
-			let reponse = reponse = {
-                    	succes: false,
-                        error : err,
-                        msg:"Problème lors de la modification, erreur de connexion."
-                    };
-            callback(reponse);
-		}
-	});
-}
-
-exports.deleteCas = function(id, callback) {
-	MongoClient.connect(DB_URL, function(err, client) {
-		var db = client.db(DB_NAME);
-
-		if(!err) {
-            let myquery = { "id_cas": ObjectId(id)};
-	        
-			db.collection(CAS_COLLECTION)
-			.deleteOne(myquery, function(err, result) {
-	         	if(!err){
-			    	reponse = {
-		                succes : true,
-		                result: result,
-		                error : null,
-		                msg: "Suppression réussie " + result
-		            };
-			   	} else {
-		            reponse = {
-		                succes : false,
-		                error : err,
-		                msg: "Problème à la suppression"
-		            };
-			    }
-			    callback(reponse);
-	        });
-		} else{
-			let reponse = reponse = {
-                    	succes: false,
-                        error : err,
-                        msg:"Problème lors de la suppression, erreur de connexion."
-                    };
-            callback(reponse);
-		}
-	});
-}
-
 exports.countCasTemoignages = function() {
-    MongoClient.connect(DB_URL, function(err, client) {
+    MongoClient.connect(DB_URL, CONNECTION_OPTIONS,function(err, client) {
         var db = client.db(DB_NAME);
         if(!err){
             db.collection(CAS_COLLECTION)
@@ -183,6 +67,7 @@ exports.getTemoignageById = function(id, callback) {
 function find(collection, query, page, pageSize, callback) {
 	MongoClient.connect(
 		DB_URL,
+		CONNECTION_OPTIONS,
 		function(err, client) {
 		var db = client.db(DB_NAME);
         if(!err){
@@ -202,7 +87,9 @@ function find(collection, query, page, pageSize, callback) {
 }
 
 function findOne(collection, query, callback) {
-	MongoClient.connect(DB_URL, function(err, client) {
+	MongoClient.connect(DB_URL,
+		CONNECTION_OPTIONS,
+		function(err, client) {
 		var db = client.db(DB_NAME);
         if(!err) {
             db.collection(collection) 
@@ -234,6 +121,7 @@ function buildMessage(status, data, message, error) {
 function getAllFieldValues(collection, fieldName, callback) {
 	MongoClient.connect(
 		DB_URL,
+		CONNECTION_OPTIONS,
 		function(err, client) {
 		var db = client.db(DB_NAME);
         if(!err){
@@ -262,6 +150,7 @@ exports.search = function(page, pageSize, category, zone, startDate, endDate, ca
 	
 	MongoClient.connect(
 		DB_URL,
+		CONNECTION_OPTIONS,
 		function(err, client) {
 		var db = client.db(DB_NAME);
 		const startDate = new Date('10/10/2015');
@@ -294,4 +183,62 @@ exports.search = function(page, pageSize, category, zone, startDate, endDate, ca
             callback(-1);
         }
     });
+}
+
+exports.importData = async function(callback){
+	await csvtojson({
+		noheader: false,
+		delimiter: ";"
+	})
+	.fromFile("./data/cas_pub.csv")
+	.then(cas => {
+		for(let i = 0; i < cas.length; i++) {
+			const day = Number(cas[i].cas_JJ);
+			const month = Number(cas[i].cas_MM);
+			const year = Number(cas[i].cas_AAAA);
+			cas[i].cas_date = new Date(`${cas[i].cas_JJ}/${cas[i].cas_MM}/${cas[i].cas_MM}`);
+		}
+		MongoClient.connect(
+		DB_URL,
+		CONNECTION_OPTIONS,
+		(err, client) => {
+			if (err) throw err;
+
+			client
+			.db(DB_NAME)
+			.collection(CAS_COLLECTION)
+			.insertMany(cas, (err, res) => {
+				if (err) throw err;
+				console.log(`Inserted: ${res.insertedCount} rows on collection cas`);
+				client.close();
+			});
+		}
+		);
+	});
+
+	await csvtojson({
+		noheader: false,
+		delimiter: ";"
+	})
+	.fromFile("./data/temoignages_pub.csv")
+	.then(temoignages => {
+		MongoClient.connect(
+			DB_URL,
+			{ useNewUrlParser: true, useUnifiedTopology: true },
+			(err, client) => {
+				if (err) throw err;
+
+				client
+				.db(DB_NAME)
+				.collection(TEMOIGNAGES_COLLECTION)
+				.insertMany(temoignages, (err, res) => {
+					if (err) throw err;
+					console.log(`Inserted: ${res.insertedCount} rows on collection temoignages`);
+					client.close();
+				});
+			}
+		);
+	});
+
+	callback(buildMessage(true, null, null, null));
 }

@@ -32,3 +32,9 @@ exports.getAllCategories = function(req, res) {
 		res.send(response);
 	});
 }
+
+exports.importData = function(req, res) {
+	db.importData(function(response){
+		res.send(response);
+	});
+}

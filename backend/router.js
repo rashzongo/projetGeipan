@@ -10,6 +10,11 @@ router.get('/', function(req,res){
   res.sendFile(__dirname + '/public/index.html');
 });
 
+// Import Data
+router.get('/importData', jsonParser, function(req, res, next) {
+	casController.importData(req, res);
+});
+
 // Cas
 router.get('/cas', jsonParser, function(req, res, next) {
 	casController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
