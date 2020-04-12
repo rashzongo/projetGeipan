@@ -15,20 +15,21 @@ router.get('/cas', jsonParser, function(req, res, next) {
 	casController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
 });
 
-router.post('/cas', jsonParser, function(req, res, next) {
-	casController.insert(req, res);
+router.get('/zones', jsonParser, function(req, res, next) {
+	casController.getAllZones(req, res);
+});
+
+router.get('/categories', jsonParser, function(req, res, next) {
+	casController.getAllCategories(req, res);
+});
+
+router.get('/cas/search', jsonParser, function(req, res, next) {
+	casController.search(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, null, null, null,null,  req, res);
+	//page, pageSize, category, zone, startDate, endDate,
 });
 
 router.get('/cas/:id', jsonParser,  function(req, res, next) {
 	casController.get(parseInt(req.params.id), req, res);
-});
-
-router.patch('/cas/:id', jsonParser,  function(req, res, next) {
-	casController.update(parseInt(req.params.id), req, res);
-});
-
-router.delete('/cas/:id', jsonParser,  function(req, res, next) {
-	casController.delete(parseInt(req.params.id), req, res);
 });
 
 // Cas && Temoignages
@@ -37,9 +38,6 @@ router.get('/cas/:idCas/temoignages', jsonParser,  function(req, res, next) {
 	parseInt(req.query.pageSize) || 20, req, res);
 });
 
-router.post('/cas/:idCas/temoignages', jsonParser, function(req, res, next) {
-	temoignagesController.insert(parseInt(req.params.idCas), req, res);
-});
 
 // Temoignages
 router.get('/temoignages', jsonParser, function(req, res, next) {
@@ -48,14 +46,6 @@ router.get('/temoignages', jsonParser, function(req, res, next) {
 
 router.get('/temoignage/:id', jsonParser,  function(req, res, next) {
 	temoignagesController.get(parseInt(req.params.id), req, res);
-});
-
-router.patch('/temoignage/:id', jsonParser,  function(req, res, next) {
-	temoigngesController.update(parseInt(req.params.id), req, res);
-});
-
-router.delete('/temoignage/:id', jsonParser,  function(req, res, next) {
-	temoigngesController.delete(parseInt(req.params.id), req, res);
 });
 
 module.exports = router;

@@ -7,6 +7,8 @@ const DB_URL = 'mongodb://localhost:27017';
 const DB_NAME = 'projetGeipan';
 const CAS_COLLECTION = 'cas';
 const TEMOIGNAGES_COLLECTION = 'temoignages';
+const CAS_ZONE_NOM = 'cas_zone_nom';
+const CAS_CLASSIFICATION = 'cas_classification';
 
 exports.connexionMongo = function(callback) {
     MongoClient.connect(DB_URL, function(err, client) {
@@ -237,4 +239,69 @@ function buildMessage(status, data, total, message, error) {
 		msg: message,
 		err: error
 	};
+}
+
+function getAllFieldValues(collection, fieldName, callback) {
+	MongoClient.connect(
+		DB_URL,
+		function(err, client) {
+		var db = client.db(DB_NAME);
+        if(!err){
+			db.collection(collection)
+			.distinct(fieldName)
+			.then(function(rep){
+				callback(rep);
+			})
+        }
+        else{
+            callback(-1);
+		}
+	})
+}
+
+exports.getAllZones = function(callback) {
+	getAllFieldValues(CAS_COLLECTION, CAS_ZONE_NOM, callback);
+}
+
+exports.getAllCtegoriess = function(callback) {
+	getAllFieldValues(CAS_COLLECTION, CAS_CLASSIFICATION, callback);
+}
+
+exports.search = function(page, pageSize, category, zone, startDate, endDate, callback) {
+	console.log('searching...');
+	
+	MongoClient.connect(
+		DB_URL,
+		function(err, client) {
+		var db = client.db(DB_NAME);
+		const startDate = new Date('10/10/2015');
+		const endDate = new Date();
+        if(!err){
+			db.collection(CAS_COLLECTION)
+			.aggregate(
+				[
+					{
+						$addFields:{
+							caseDate:{
+								$dateFromParts : {
+									'year':  "$cas_AAAA" ,
+									'month': { $toInt:  "$cas_MM" },
+									'day': { $toInt:  "$cas_JJ" },
+								}
+							}
+						}
+					}
+				]
+			)
+            .toArray()
+            .then(arr => {
+				count(CAS_COLLECTION, function (response) {
+					callback(buildMessage(true, arr, response, null, ""));
+				});
+			});
+        }
+        else{
+            callback(-1);
+        }
+    });
 }
