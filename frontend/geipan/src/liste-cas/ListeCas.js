@@ -2,8 +2,12 @@ import React, { Component } from 'react';
 import MaterialTable from 'material-table';
 import './ListeCas.css';
 import { withStyles } from '@material-ui/styles';
-import { FormControl, InputLabel, OutlinedInput, Select, MenuItem, TextField} from '@material-ui/core';
-
+import { FormControl, InputLabel, OutlinedInput, Select, MenuItem, TextField,} from '@material-ui/core';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 const styles = {
   root: {
@@ -85,57 +89,65 @@ class ListeCas extends Component {
     return (
       <div className={classes.root}>
         {/* Filters */}
-        <form className={classes.filters} noValidate autoComplete="off">
-          <FormControl variant="outlined">
-            <InputLabel htmlFor={this.SEARCH_INPUT}>Nom du cas</InputLabel>
-            <OutlinedInput id={this.SEARCH_INPUT} name={this.SEARCH_INPUT} value={this.state.searchInput} onChange={handleChange} label="Nom du cas" />
-          </FormControl>
+        <ExpansionPanel defaultExpanded>
+          <ExpansionPanelSummary
+            expandIcon={<ExpandMoreIcon />}
+          >
+            <h2>Filtres de recherche</h2>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <form className={classes.filters} noValidate autoComplete="off">
+              <FormControl variant="outlined">
+                <InputLabel htmlFor={this.SEARCH_INPUT}>Mot clé</InputLabel>
+                <OutlinedInput id={this.SEARCH_INPUT} name={this.SEARCH_INPUT} value={this.state.searchInput} onChange={handleChange} label="Mot clé" />
+              </FormControl>
 
-          <FormControl variant="outlined">
-            <InputLabel htmlFor={this.ZONE}>Zone</InputLabel>
-            <Select id={this.ZONE} name={this.ZONE} value={this.state.zone} onChange={handleChange} label="Zone">
-              <MenuItem value="" selected>Aucune</MenuItem>
-              {this.state.allZones.map((zone, index) => 
-              <MenuItem value={zone} key={zone}>{zone}</MenuItem>
-              )}
-              <MenuItem value={20}>20</MenuItem>
-            </Select>
-          </FormControl>
+              <FormControl variant="outlined">
+                <InputLabel htmlFor={this.ZONE}>Zone</InputLabel>
+                <Select id={this.ZONE} name={this.ZONE} value={this.state.zone} onChange={handleChange} label="Zone">
+                  <MenuItem value="" selected>Aucune</MenuItem>
+                  {this.state.allZones.map((zone, index) => 
+                  <MenuItem value={zone} key={zone}>{zone}</MenuItem>
+                  )}
+                  <MenuItem value={20}>20</MenuItem>
+                </Select>
+              </FormControl>
 
-          <FormControl variant="outlined">
-          <InputLabel htmlFor={this.CATEGORY}>Categorie</InputLabel>
-            <Select id={this.CATEGORY} name={this.CATEGORY} value={this.state.category} onChange={handleChange} label="Categorie">
-              <MenuItem value="" selected>Aucune</MenuItem>
-              {this.state.allCategories.map((zone, index) => 
-              <MenuItem value={zone} key={zone}>{zone}</MenuItem>
-              )}
-              <MenuItem value={20}>B</MenuItem>
-            </Select>
-          </FormControl>
+              <FormControl variant="outlined">
+              <InputLabel htmlFor={this.CATEGORY}>Categorie</InputLabel>
+                <Select multiple id={this.CATEGORY} name={this.CATEGORY} value={this.state.category} onChange={handleChange} label="Categorie">
+                  <MenuItem value="" selected>Aucune</MenuItem>
+                  {this.state.allCategories.map((zone, index) => 
+                  <MenuItem value={zone} key={zone}>{zone}</MenuItem>
+                  )}
+                  <MenuItem value={20}>B</MenuItem>
+                </Select>
+              </FormControl>
 
-          <TextField
-            type="date"
-            id={this.START_DATE}
-            name={this.START_DATE}
-            value={this.state.startDate}
-            onChange={handleChange}
-            label="Du"
-            InputLabelProps={{ shrink: true }}
-            variant="outlined"
-          />
-          <TextField
-            type="date"
-            id={this.END_DATE}
-            name={this.END_DATE}
-            value={this.state.endDate}
-            onChange={handleChange}
-            label="Au"
-            InputLabelProps={{ shrink: true }}
-            variant="outlined"
-          />
-        </form>
-
-
+              <TextField
+                type="date"
+                id={this.START_DATE}
+                name={this.START_DATE}
+                value={this.state.startDate}
+                onChange={handleChange}
+                label="Du"
+                InputLabelProps={{ shrink: true }}
+                variant="outlined"
+              />
+              <TextField
+                type="date"
+                id={this.END_DATE}
+                name={this.END_DATE}
+                value={this.state.endDate}
+                onChange={handleChange}
+                label="Au"
+                InputLabelProps={{ shrink: true }}
+                variant="outlined"
+              />
+            </form>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+        
         {/* DataTable */}
         <MaterialTable
           tableRef={this.tableRef}
