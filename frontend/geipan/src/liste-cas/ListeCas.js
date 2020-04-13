@@ -115,7 +115,7 @@ class ListeCas extends Component {
 
               <FormControl variant="outlined">
               <InputLabel htmlFor={this.CATEGORY}>Categorie</InputLabel>
-                <Select multiple id={this.CATEGORY} name={this.CATEGORY} value={this.state.category} onChange={handleChange} label="Categorie">
+                <Select id={this.CATEGORY} name={this.CATEGORY} value={this.state.category} onChange={handleChange} label="Categorie">
                   <MenuItem value="" selected>Aucune</MenuItem>
                   {this.state.allCategories.map((zone, index) => 
                   <MenuItem value={zone} key={zone}>{zone}</MenuItem>
