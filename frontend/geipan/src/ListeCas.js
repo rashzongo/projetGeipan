@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import MaterialTable from 'material-table';
-import './ListeCas.css';
 import { withStyles } from '@material-ui/styles';
 import { FormControl, InputLabel, OutlinedInput, Select, MenuItem, TextField,} from '@material-ui/core';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import Typography from '@material-ui/core/Typography';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const styles = {
   root: {
@@ -53,13 +51,11 @@ class ListeCas extends Component {
   }
   
   handleChange(evt){
-    console.log('handling changes ...')
     const value = evt.target.value;
     this.setState({
       ...this.state,
       [evt.target.name]: value
     });
-    console.log(this.state);
     this.tableRef.current.onQueryChange();
   };
 
@@ -79,6 +75,10 @@ class ListeCas extends Component {
       .then(result => {
         this.setState({allCategories: result});
       });
+  }
+
+  goToCase(id_cas) {
+    this.props.history.push('/cas/' + id_cas);
   }
 
   render() {
@@ -149,11 +149,11 @@ class ListeCas extends Component {
         </ExpansionPanel>
         
         {/* DataTable */}
+        <h2>Résultats</h2>
         <MaterialTable
           tableRef={this.tableRef}
-          title="Liste des Cas"
+          title=""
           columns={[
-            { title: 'id', field: 'id_cas' },
             { title: 'Nom', field: 'cas_nom_dossier' },
             { title: 'Zone', field: 'cas_zone_nom' },
             { title: 'Categorie', field: 'cas_classification' },
@@ -194,6 +194,25 @@ class ListeCas extends Component {
                 })
             })
           }
+          actions={[
+            {
+              icon: 'infos',
+              tooltip: 'Voir Plus',
+              onClick: (event, rowData) => this.goToCase(rowData.id_cas)
+            }
+          ]}
+          localization={{
+            pagination: {
+                labelDisplayedRows: '{from}-{to} sur {count}',
+                labelRowsSelect: 'résulats'
+            },
+            header: {
+                actions: ''
+            },
+            body: {
+                emptyDataSourceMessage: 'Aucun résultat'
+            }
+          }}
         />
       </div>
     )

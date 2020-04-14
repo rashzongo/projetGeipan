@@ -1,0 +1,11 @@
+export const SEARCH_INPUT = 'searchInput';
+export const  ZONE = 'zone';
+export const  CATEGORY = 'category';
+export const  START_DATE = 'startDate';
+export const  END_DATE = 'endDate';
+export const  SERVER_URL= 'http://localhost:1234';
+export const  ZONES_PATH='/zones';
+export const  CATEGORIES_PATH='/categories';
+export const  CAS_PATH='/cas';
+export const  TEMOIGNAGES_PATH='/temoignages';
+export const  IMPORT_DATA_PATH='/importData';
