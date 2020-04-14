@@ -11,7 +11,7 @@ router.get('/', function(req,res){
 });
 
 // Import Data
-router.post('/importData', jsonParser, function(req, res, next) {
+router.get('/importData', jsonParser, function(req, res, next) {
 	casController.importData(req, res);
 });
 
@@ -53,7 +53,7 @@ router.get('/temoignages', jsonParser, function(req, res, next) {
 	temoignagesController.getAll(parseInt(req.query.page) || 0, parseInt(req.query.pageSize) || 20, req, res);
 });
 
-router.get('/temoignage/:id', jsonParser,  function(req, res, next) {
+router.get('/temoignages/:id', jsonParser,  function(req, res, next) {
 	temoignagesController.get(req.params.id, req, res);
 });
 

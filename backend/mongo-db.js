@@ -39,7 +39,6 @@ exports.getCas = function(page, pageSize, searchInput, category, zone, startDate
 	if(zone){
 		query.cas_zone_nom = zone;
 	}
-	console.log(query);
 	find(CAS_COLLECTION, query, page, pageSize, callback);
 };
 
@@ -98,7 +97,6 @@ async function find(collection, query, page, pageSize, callback) {
 }
 
 function findOne(collection, query, callback) {
-	console.log(query)
 	MongoClient.connect(DB_URL,
 		CONNECTION_OPTIONS,
 		function(err, client) {
@@ -107,7 +105,6 @@ function findOne(collection, query, callback) {
             db.collection(collection) 
             .findOne(query, function(err, data) {
 				let reponse;
-				console.log(data);
                 if(!err){
 					reponse = buildMessage(true, data, data ? 1 : 0, "");
                 } else{
@@ -159,6 +156,7 @@ exports.getAllCategories = function(callback) {
 }
 
 exports.importData = function(callback){
+	let message= '';
 	csvtojson({
 		noheader: false,
 		delimiter: ";"
@@ -179,44 +177,34 @@ exports.importData = function(callback){
 		CONNECTION_OPTIONS,
 		(err, client) => {
 			if (err) throw err;
-
 			client
 			.db(DB_NAME)
 			.collection(CAS_COLLECTION)
 			.insertMany(cas, (err, res) => {
 				if (err) throw err;
-				console.log(`Inserted: ${res.insertedCount} rows on collection cas`);
-				client.close();
-			});
-		}
-		);
-	});
-
-	csvtojson({
-		noheader: false,
-		delimiter: ";"
-	})
-	.fromFile("./data/temoignages_pub.csv")
-	.then(temoignages => {
-		MongoClient.connect(
-			DB_URL,
-			{ useNewUrlParser: true, useUnifiedTopology: true },
-			(err, client) => {
-				if (err) throw err;
-
-				client
-				.db(DB_NAME)
-				.collection(TEMOIGNAGES_COLLECTION)
-				.insertMany(temoignages, (err, res) => {
-					if (err) throw err;
-					console.log(`Inserted: ${res.insertedCount} rows on collection temoignages`);
-					client.close();
+				message = message + `Inserted: ${res.insertedCount} rows on collection cas`;
+				
+				csvtojson({
+					noheader: false,
+					delimiter: ";"
+				})
+				.fromFile("./data/temoignages_pub.csv")
+				.then(temoignages => {
+					client
+					.db(DB_NAME)
+					.collection(TEMOIGNAGES_COLLECTION)
+					.insertMany(temoignages, (err, res) => {
+						if (err) throw err;
+						message = message + '\n' + `Inserted: ${res.insertedCount} rows on collection temoignages`;
+						client.close();
+						console.log(message);
+						callback(buildMessage(true, null, 0, message));
+					});
 				});
 			}
 		);
 	});
-
-	callback(buildMessage(true, null, 0, null));
+})
 }
 
 function formatNumber(date){
