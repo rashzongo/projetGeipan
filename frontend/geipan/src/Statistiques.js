@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/styles';
-import { TEMOIGNAGES_PATH, SERVER_URL } from './constant';
+import ChartGraph from "./ChartGraph";
 
 const styles = {
 };
@@ -19,7 +19,7 @@ class Statistiques extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        <p>Statistiques</p>
+        <ChartGraph></ChartGraph>
       </div>
     )
   }
