@@ -18,10 +18,16 @@ class Accueil extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
+      <h1>Université Côte d'azur - Master 2 MBDS</h1>
+      <h2>Technlogies JS : Projet Geipan</h2>
         
       Etudiants:
-        - DIAZ Gabriel
-        - ZONGO S; H. Rachida
+      <ul>
+        <li>DIAZ Gabriel</li>
+        <li>ZONGO S. H. Rachida</li>
+      </ul>
+
+      Enseignant : M. BUFFA Michel
       </div>
     )
   }
