@@ -24,7 +24,7 @@ Le projet est composé de deux applications :
     | GET /cas/{id} | Récupère le cas assoccié à {id} | Aucun
     | GET /cas/{id}/temoignages | Recupère tous les temoiganges du cas associé à {id} | page, pageSize
     | GET //temoignages | Liste tous les temoiganges | page, pageSize
-    | GET /temoignages/{id} | Modifie l'annonce associée à {id} |
+    | GET /temoignages/{id} | Récupère le temoignage assoccié à {id} |
 
 - Exécution :
     Depuis le répertoire `./backend`
